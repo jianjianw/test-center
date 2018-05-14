@@ -3,12 +3,20 @@ package com.example.demo.api;
 
 import com.example.demo.util.NhhosUtil;
 import com.nhsoft.module.base.export.dto.AssembleDetailDTO;
+import com.nhsoft.module.base.export.dto.BranchDTO;
 import com.nhsoft.module.base.export.dto.BranchItemKitQuery;
 import com.nhsoft.module.base.export.dto.OrderQueryCondition;
 import com.nhsoft.module.base.export.rpc.BranchItemKitRpc;
 import com.nhsoft.module.base.export.rpc.BranchRpc;
+import com.nhsoft.module.infrastructure.export.dto.WebLogDTO;
+import com.nhsoft.module.infrastructure.export.rpc.WebLogRpc;
+import com.nhsoft.module.inventory.export.rpc.PosItemLogRpc;
+import com.nhsoft.module.pos.export.dto.ItemSalePageDTO;
 import com.nhsoft.module.pos.export.dto.PolicyAllowPriftQuery;
+import com.nhsoft.module.pos.export.dto.PosOrderQuery;
 import com.nhsoft.module.pos.export.rpc.PosOrderRpc;
+import com.nhsoft.module.settlement.export.dto.AssociateSettlementPageDTO;
+import com.nhsoft.module.settlement.export.rpc.AssociateSettlementRpc;
 import com.nhsoft.module.transfer.export.dto.*;
 import com.nhsoft.module.transfer.export.rpc.PurchaseOrderRpc;
 import com.nhsoft.module.transfer.export.rpc.ReceiveOrderRpc;
@@ -136,6 +144,20 @@ public class TestCenter {
 
     }
 
+    public List<Integer> getBranchNums(String systemBookCode) {
+        String url = nhhosUtil.getUrl(systemBookCode);
+        BranchRpc branchRpc = nhhosUtil.createCenterObject(BranchRpc.class, url);
+        List<BranchDTO> all = branchRpc.findAll(systemBookCode);
+        List<Integer> branchNums = new ArrayList<>();
+
+        for (int i = 0; i < all.size(); i++) {
+            BranchDTO branchDTO = all.get(i);
+            Integer branchNum = branchDTO.getBranchNum();
+            branchNums.add(branchNum);
+        }
+        return branchNums;
+    }
+
 
 
 
@@ -143,20 +165,20 @@ public class TestCenter {
     public List<ReceiveReturnOrderDTO> test5() throws Exception{
         String url = nhhosUtil.getUrl(systemBookCode);
 
+
         OrderQueryCondition query = new OrderQueryCondition();
         String systemBookCode = "4344";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Date dateFrom = sdf.parse("2018-04-25");
-        Date dateTo = sdf.parse("2018-04-25");
-        List<Integer> branchNums = new ArrayList<>();
-        branchNums.add(99);
+        Date dateFrom = sdf.parse("2018-05-01");
+        Date dateTo = sdf.parse("2018-05-31");
+
         query.setSystemBookCode(systemBookCode);
-        query.setToBranchNums(branchNums);
         query.setDateStart(dateFrom);
         query.setDateEnd(dateTo);
+        query.setToBranchNums(getBranchNums(systemBookCode));
         //query.setFid("PI4344990001505");
-        //query.setOrderState("收货单");
-        query.setSupplierNum(434499048);
+        //query.setOrderType("退货单");
+        query.setSupplierNum(434400003);
         ReceiveOrderRpc receiveOrderRpc = nhhosUtil.createCenterObject(ReceiveOrderRpc.class, url);
         List<ReceiveReturnOrderDTO> result = receiveOrderRpc.findReceiveReturnOrderByQuery(systemBookCode, query);
 
@@ -170,9 +192,13 @@ public class TestCenter {
         String systemBookCode = "4020";
         String url = nhhosUtil.getUrl(systemBookCode);
         ReceiveOrderRpc receiveOrderRpc = nhhosUtil.createCenterObject(ReceiveOrderRpc.class, url);
-        String orderState = "收货单";
+        String orderType = "收货单";
         String orderFid = "PI4020990000146";
-        ReceiveReturnOrderDTO result = receiveOrderRpc.findReceiveReturnOrderDetails(systemBookCode, orderFid, orderState);
+
+        /*String orderState = "退货单";
+        String orderFid = "RO4344010000217";*/
+
+        ReceiveReturnOrderDTO result = receiveOrderRpc.findReceiveReturnOrderDetails(systemBookCode, orderFid, orderType);
         return result;
 
     }
@@ -208,4 +234,126 @@ public class TestCenter {
         return orderBySupplier;
 
     }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/test9")
+    public Object test9() throws Exception{
+        String systemBookCode = "4344";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dateFrom = sdf.parse("2018-05-01");
+        Date dateTo = sdf.parse("2018-05-5");
+        String url = nhhosUtil.getUrl(systemBookCode);
+        PosOrderRpc posOrderRpc = nhhosUtil.createCenterObject(PosOrderRpc.class, url);
+        PosOrderQuery query = new PosOrderQuery();
+        query.setSystemBookCode(systemBookCode);
+        query.setDateFrom(dateFrom);
+        query.setDateTo(dateTo);
+        query.setSupplierNum(434499028);
+
+        query.setOffset(0);
+        query.setLimit(50);
+
+        ItemSalePageDTO result = posOrderRpc.findItemSupplierSummary(systemBookCode, query);
+        return result;
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/test10")
+    public Object test10() throws Exception{
+        String systemBookCode = "4344";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dateFrom = sdf.parse("2018-05-09");
+        Date dateTo = sdf.parse("2018-05-09");
+        String url = nhhosUtil.getUrl(systemBookCode);
+        AssociateSettlementRpc associateSettlementRpc = nhhosUtil.createCenterObject(AssociateSettlementRpc.class, url);
+
+        PreSettlementQueryData query = new PreSettlementQueryData();
+        query.setSystemBookCode(systemBookCode);
+        query.setDateFrom(dateFrom);
+        query.setDateTo(dateTo);
+        List<Integer> branchNums = new ArrayList<>();
+        branchNums.add(1);
+        branchNums.add(2);
+        branchNums.add(3);
+        branchNums.add(4);
+        branchNums.add(5);
+        branchNums.add(6);
+        branchNums.add(7);
+        branchNums.add(8);
+        branchNums.add(9);
+        branchNums.add(10);
+        branchNums.add(99);
+        query.setBranchNums(branchNums);
+        query.setDateType("制单时间");
+        query.setPayerNum(434499073);
+        query.setBranchNum(99);
+
+        AssociateSettlementPageDTO result = associateSettlementRpc.findAssociateSettlementByPage(systemBookCode, query, 0, 50);
+        return result;
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/test11")
+    public Object test11() throws Exception{
+        String systemBookCode = "4344";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dateFrom = sdf.parse("2018-05-09");
+        Date dateTo = sdf.parse("2018-05-09");
+        String url = nhhosUtil.getUrl(systemBookCode);
+        AssociateSettlementRpc associateSettlementRpc = nhhosUtil.createCenterObject(AssociateSettlementRpc.class, url);
+
+        PreSettlementQueryData query = new PreSettlementQueryData();
+        query.setSystemBookCode(systemBookCode);
+        query.setDateFrom(dateFrom);
+        query.setDateTo(dateTo);
+
+        query.setBranchNums(getBranchNums(systemBookCode));
+        query.setDateType("制单时间");
+        query.setPayerNum(434499073);
+        query.setBranchNum(99);
+
+        AssociateSettlementPageDTO result = associateSettlementRpc.findAssociateSettlementByPage(systemBookCode, query, 0, 50);
+        return result;
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/test12")
+    public Object test12() throws Exception{
+        String systemBookCode = "4020";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dateFrom = sdf.parse("2018-04-01");
+        Date dateTo = sdf.parse("2018-04-30");
+        List<Integer> branchNums = new ArrayList<>();
+        branchNums.add(99);
+        String url = nhhosUtil.getUrl(systemBookCode);
+        PosItemLogRpc posItemLogRpc = nhhosUtil.createCenterObject(PosItemLogRpc.class, url);
+        String checkType = "调整单";
+        List<String> list = new ArrayList<>();
+        list.add("原料领用单");
+        List<Object[]> result = posItemLogRpc.findSumByItemFlag(systemBookCode,branchNums,dateFrom,dateTo,checkType,null,null,list);
+        return result;
+    }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/test13")
+    public void test13(){
+        String url = nhhosUtil.getUrl(systemBookCode);
+        WebLogRpc centerObject = nhhosUtil.createCenterObject(WebLogRpc.class, url);
+        WebLogDTO userLastLogin = centerObject.findUserLastLogin("4344", 654321, null, 1);
+        System.out.println();
+
+       /* String systemBookCode = "4344";
+        WebLogDTO dto = new WebLogDTO();
+        dto.setSystemBookCode(systemBookCode);
+        dto.setWebLogCode("qwe");
+        dto.setWebLogName("qwe");
+        //dto.setAppUserNum(123456);
+        dto.setSupplierUserNum(654321);
+        dto.setWebLogIp("192.168.0.125");
+        dto.setBranchNum(99);
+        dto.setWebLogTime(new Date());
+
+        centerObject.save(systemBookCode,dto);*/
+    }
+
+
+
 }
